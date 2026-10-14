@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" role="img" aria-labelledby="title description">
+<title id="title">Predicted voltage across the red, green and blue LEDs</title>
+<desc id="description">LEDs switch between zero and their estimated forward drops: red 2.0 V, green 2.2 V, blue 3.2 V. Red toggles every 0.5 seconds, green every 0.75 seconds and blue every 1 second. All start off.</desc>
+<rect width="1000" height="470" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#14213d}.grid{stroke:#dce3ea;stroke-width:1}</style>
+<text x="50" y="42" font-size="26" font-weight="bold">Voltage across the red, green and blue LEDs</text>
+<text x="50" y="72" font-size="16">Predicted using red 2.0 V, green 2.2 V, blue 3.2 V; actual forward drops may differ.</text>
+<path class="grid" d="M90 105 V300"/><text x="85" y="326" font-size="16">0</text>
+<path class="grid" d="M220 105 V300"/><text x="215" y="326" font-size="16">1</text>
+<path class="grid" d="M350 105 V300"/><text x="345" y="326" font-size="16">2</text>
+<path class="grid" d="M480 105 V300"/><text x="475" y="326" font-size="16">3</text>
+<path class="grid" d="M610 105 V300"/><text x="605" y="326" font-size="16">4</text>
+<path class="grid" d="M740 105 V300"/><text x="735" y="326" font-size="16">5</text>
+<path class="grid" d="M870 105 V300"/><text x="865" y="326" font-size="16">6</text>
+<path class="grid" d="M90 150 H870 M90 200 H870 M90 250 H870"/>
+<path d="M90 100 V300 H890" fill="none" stroke="#14213d" stroke-width="2"/>
+<text x="55" y="305" font-size="16">0</text><text x="55" y="255" font-size="16">1</text><text x="55" y="205" font-size="16">2</text><text x="55" y="155" font-size="16">3</text><text x="55" y="105" font-size="16">4</text>
+<text x="24" y="252" font-size="17" transform="rotate(-90 24 252)">LED voltage (V)</text>
+<text x="420" y="355" font-size="18">Time (seconds)</text>
+<path d="M90 300 H155 V200 H220 V300 H285 V200 H350 V300 H415 V200 H480 V300 H545 V200 H610 V300 H675 V200 H740 V300 H805 V200 H870 V300 H870" fill="none" stroke="#c0392b" stroke-width="6" opacity=".8"/>
+<path d="M90 300 H187.5 V190 H285 V300 H382.5 V190 H480 V300 H577.5 V190 H675 V300 H772.5 V190 H870 V300 H870" fill="none" stroke="#11743a" stroke-width="4" stroke-dasharray="12 5"/>
+<path d="M90 300 H220 V140 H350 V300 H480 V140 H610 V300 H740 V140 H870 V300 H870" fill="none" stroke="#2455aa" stroke-width="2.5" stroke-dasharray="3 4"/>
+<path d="M90 395 H130" stroke="#c0392b" stroke-width="6"/><text x="143" y="400" font-size="16">Red / D7: 1 Hz</text>
+<path d="M360 395 H400" stroke="#11743a" stroke-width="4" stroke-dasharray="12 5"/><text x="413" y="400" font-size="16">Green / D6: ⅔ Hz</text>
+<path d="M665 395 H705" stroke="#2455aa" stroke-width="2.5" stroke-dasharray="3 4"/><text x="718" y="400" font-size="16">Blue / D5: ½ Hz</text>
+<text x="90" y="440" font-size="16">This is LED anode-to-cathode voltage; GPIO voltage instead switches between ≈0 and ≈5 V.</text>
+</svg>

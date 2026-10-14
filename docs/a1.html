@@ -1,18 +1,186 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="A breadboard light pattern with independent timers, current-limiting resistors, and a six-second repeating rhythm." />
+<title>A1: Holiday Lights · Runkai Zhang</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<nav aria-label="Portfolio"><a href="index.html">← All assignments</a></nav>
+<header>
+<p class="eyebrow">HCDE 439 · Assignment 1</p>
+<h1>Holiday Lights: Three Independent LED Rhythms</h1>
+<p>Red, green, and blue LEDs on an ELEGOO UNO R3</p>
+<p>Runkai Zhang · <time datetime="2026-10-12">October 12, 2026</time></p>
+</header>
+<main><article>
+<p>For this holiday-light assignment, I used three separate LEDs from my kit. Each has its own output pin and resistor. Red, green, and blue blink at different rates, making a combined pattern that repeats every six seconds.</p>
+<div class="markdown-heading"><h2 class="heading-element">Circuit and schematic</h2><a id="user-content-circuit-and-schematic" class="anchor" aria-label="Permalink: Circuit and schematic" href="#circuit-and-schematic"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<table>
+<thead>
+<tr>
+<th>LED</th>
+<th>Arduino pin</th>
+<th>Series resistor</th>
+<th>On / off interval</th>
+<th>Full cycle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Red</td>
+<td>D7</td>
+<td>330 Ω</td>
+<td>500 ms / 500 ms</td>
+<td>1 second</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>D6</td>
+<td>330 Ω</td>
+<td>750 ms / 750 ms</td>
+<td>1.5 seconds</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td>D5</td>
+<td>330 Ω</td>
+<td>1000 ms / 1000 ms</td>
+<td>2 seconds</td>
+</tr>
+</tbody>
+</table>
 
-    <title>Example Student's HCDE 439 Physical Computing Page!</title>
+    <p><a target="_blank" rel="noopener noreferrer" href="projects/holiday-lights/schematic.svg"><img src="projects/holiday-lights/schematic.svg" alt="Schematic: D7 through 330 ohms to red, D6 through 330 ohms to green, D5 through 330 ohms to blue; all LED cathodes return to ground." width="1000" height="650" style="max-width: 100%; height: auto; max-height: 650px;"></a></p>
+    Each GPIO drives one LED through its own 330 Ω resistor. The resistors limit current, and all three cathodes connect to the UNO's ground.
 
-    <link href="style.css" rel="stylesheet" type="text/css" />
-  </head>
-  <body>
-    <h1>Example Student's Assignment 1!</h1>
-    <div class="header">
-      <img src="red-panda.jpg" />
-      <p>Here is all the documentation for assignment 1!</p>
-    </div>
-  </body>
+
+    <p><a target="_blank" rel="noopener noreferrer" href="projects/holiday-lights/circuit-photo.jpg"><img src="projects/holiday-lights/circuit-photo.jpg" alt="Actual ELEGOO UNO R3 breadboard circuit with separate red, green, and blue LEDs, three series resistors, jumper wires, and USB power." width="2000" height="1500" style="max-width: 100%; height: auto; max-height: 1500px;"></a></p>
+    My assembled circuit uses D7, D6, and D5 for red, green, and blue respectively, with one 330 Ω resistor per LED and shared ground. I chose 330 Ω for visible illumination while keeping the estimated current below the UNO's 20 mA per-pin specification.
+
+<p>Each branch is <strong>output pin → resistor → LED anode → LED cathode → ground</strong>. The long LED lead normally identifies the anode; the short lead and flat side identify the cathode.</p>
+<div class="markdown-heading"><h3 class="heading-element">Resistor calculations</h3><a id="user-content-resistor-calculations" class="anchor" aria-label="Permalink: Resistor calculations" href="#resistor-calculations"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>For a nominal 5 V HIGH output, I assume forward drops of <strong>2.0 V for red</strong>, <strong>2.2 V for green</strong>, and <strong>3.2 V for blue</strong>. These are design estimates, not measured kit specifications; some green LEDs have substantially higher forward drops.</p>
+<p>For red, targeting approximately 10 mA:</p>
+<pre lang="text"><code>R = (Voutput − Vforward) / Itarget
+R = (5 V − 2 V) / 0.010 A
+R = 300 Ω
+</code></pre>
+<p>I chose <strong>330 Ω</strong>, the next larger available kit value, and used one per LED.</p>
+<table>
+<thead>
+<tr>
+<th>LED</th>
+<th>Estimated current calculation</th>
+<th>On-current</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Red</td>
+<td>(5 − 2.0) / 330 A</td>
+<td>9.1 mA</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>(5 − 2.2) / 330 A</td>
+<td>8.5 mA</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td>(5 − 3.2) / 330 A</td>
+<td>5.5 mA</td>
+</tr>
+</tbody>
+</table>
+<p>Using unrounded values, all three draw about <strong>23.0 mA when on simultaneously</strong>, or <strong>11.5 mA averaged over their 50% duty cycles</strong>. These figures exclude the UNO's own current. Equal resistors do not guarantee equal perceived brightness.</p>
+<div class="markdown-heading"><h2 class="heading-element">Firmware</h2><a id="user-content-firmware" class="anchor" aria-label="Permalink: Firmware" href="#firmware"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>Each LED has its own timer and state. The sketch checks <code>millis()</code> instead of blocking with <code>delay()</code>, so one LED's waiting period does not pause the others. All LEDs start off. Every meaningful code line has an explanatory comment immediately above it.</p>
+<p><a href="projects/holiday-lights/holiday_lights.ino">Download the Arduino sketch</a>.</p>
+<div class="highlight highlight-source-c++"><pre><span class="pl-c"><span class="pl-c">//</span> Store the number of LEDs controlled independently.</span>
+<span class="pl-k">const</span> byte <span class="pl-c1">LED_COUNT</span> = <span class="pl-c1">3</span>;
+<span class="pl-c"><span class="pl-c">//</span> Assign each LED its own UNO digital output pin.</span>
+<span class="pl-k">const</span> byte <span class="pl-c1">LED_PINS</span>[<span class="pl-c1">LED_COUNT</span>] = {<span class="pl-c1">7</span>, <span class="pl-c1">6</span>, <span class="pl-c1">5</span>};
+<span class="pl-c"><span class="pl-c">//</span> Set each LED's time between state changes in milliseconds.</span>
+<span class="pl-k">const</span> <span class="pl-k">unsigned</span> <span class="pl-k">long</span> <span class="pl-c1">TOGGLE_MS</span>[<span class="pl-c1">LED_COUNT</span>] = {<span class="pl-c1">500</span>, <span class="pl-c1">750</span>, <span class="pl-c1">1000</span>};
+<span class="pl-c"><span class="pl-c">//</span> Store a separate timing reference for each LED.</span>
+<span class="pl-k">unsigned</span> <span class="pl-k">long</span> lastToggle[<span class="pl-c1">LED_COUNT</span>] = {<span class="pl-c1">0</span>, <span class="pl-c1">0</span>, <span class="pl-c1">0</span>};
+<span class="pl-c"><span class="pl-c">//</span> Track each LED's on/off state, starting with all LEDs off.</span>
+<span class="pl-k">bool</span> ledIsOn[<span class="pl-c1">LED_COUNT</span>] = {<span class="pl-c1">false</span>, <span class="pl-c1">false</span>, <span class="pl-c1">false</span>};
+
+<span class="pl-c"><span class="pl-c">//</span> Run the initialization once after reset.</span>
+<span class="pl-k">void</span> <span class="pl-en">setup</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Visit every LED to initialize its pin.</span>
+  <span class="pl-k">for</span> (byte i = <span class="pl-c1">0</span>; i &lt; <span class="pl-c1">LED_COUNT</span>; i++) {
+    <span class="pl-c"><span class="pl-c">//</span> Configure this LED's pin as an output.</span>
+    <span class="pl-c1">pinMode</span>(<span class="pl-c1">LED_PINS</span>[i], <span class="pl-c1">OUTPUT</span>);
+    <span class="pl-c"><span class="pl-c">//</span> Start this LED switched off.</span>
+    <span class="pl-c1">digitalWrite</span>(<span class="pl-c1">LED_PINS</span>[i], <span class="pl-c1">LOW</span>);
+  }
+  <span class="pl-c"><span class="pl-c">//</span> Read a common starting time after pin initialization.</span>
+  <span class="pl-k">const</span> <span class="pl-k">unsigned</span> <span class="pl-k">long</span> startTime = <span class="pl-c1">millis</span>();
+  <span class="pl-c"><span class="pl-c">//</span> Visit every LED to initialize its timer.</span>
+  <span class="pl-k">for</span> (byte i = <span class="pl-c1">0</span>; i &lt; <span class="pl-c1">LED_COUNT</span>; i++) {
+    <span class="pl-c"><span class="pl-c">//</span> Start this LED's timer at the common starting time.</span>
+    lastToggle[i] = startTime;
+  }
+}
+
+<span class="pl-c"><span class="pl-c">//</span> Repeat continuously to update all three independent timers.</span>
+<span class="pl-k">void</span> <span class="pl-en">loop</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Read the current time once for this pass through the loop.</span>
+  <span class="pl-k">const</span> <span class="pl-k">unsigned</span> <span class="pl-k">long</span> now = <span class="pl-c1">millis</span>();
+  <span class="pl-c"><span class="pl-c">//</span> Check each LED's timer without pausing the other LEDs.</span>
+  <span class="pl-k">for</span> (byte i = <span class="pl-c1">0</span>; i &lt; <span class="pl-c1">LED_COUNT</span>; i++) {
+    <span class="pl-c"><span class="pl-c">//</span> Use unsigned subtraction to check elapsed time across millis rollover.</span>
+    <span class="pl-k">if</span> (now - lastToggle[i] &gt;= <span class="pl-c1">TOGGLE_MS</span>[i]) {
+      <span class="pl-c"><span class="pl-c">//</span> Advance this timer by its interval to preserve its schedule.</span>
+      lastToggle[i] += <span class="pl-c1">TOGGLE_MS</span>[i];
+      <span class="pl-c"><span class="pl-c">//</span> Change this LED to the opposite on/off state.</span>
+      ledIsOn[i] = !ledIsOn[i];
+      <span class="pl-c"><span class="pl-c">//</span> Set this LED's output high when on and low when off.</span>
+      <span class="pl-c1">digitalWrite</span>(<span class="pl-c1">LED_PINS</span>[i], ledIsOn[i] ? <span class="pl-c1">HIGH</span> : <span class="pl-c1">LOW</span>);
+    }
+  }
+}</pre></div>
+<div class="markdown-heading"><h2 class="heading-element">Circuit operation</h2><a id="user-content-circuit-operation" class="anchor" aria-label="Permalink: Circuit operation" href="#circuit-operation"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+
+    <p><a target="_blank" rel="noopener noreferrer" href="projects/holiday-lights/circuit-operation.gif"><img src="projects/holiday-lights/circuit-operation.gif" alt="Actual recording of red, green, and blue LEDs blinking on the breadboard beside the USB-powered ELEGOO UNO R3." width="360" height="640" style="max-width: 100%; height: auto; max-height: 640px;"></a></p>
+    A six-second segment from my actual circuit recording, converted to a looping GIF at real-time speed. The firmware gives red six cycles, green four, and blue three per six-second pattern.
+
+<p>The cycle lengths are 1, 1.5, and 2 seconds. Their smallest common repeat time is <strong>6 seconds</strong>, so the LEDs repeatedly move into and out of alignment.</p>
+<div class="markdown-heading"><h2 class="heading-element">Questions</h2><a id="user-content-questions" class="anchor" aria-label="Permalink: Questions" href="#questions"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div class="markdown-heading"><h3 class="heading-element">1. Voltage across the LEDs over time</h3><a id="user-content-1-voltage-across-the-leds-over-time" class="anchor" aria-label="Permalink: 1. Voltage across the LEDs over time" href="#1-voltage-across-the-leds-over-time"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+
+    <p><a target="_blank" rel="noopener noreferrer" href="projects/holiday-lights/led-voltage.svg"><img src="projects/holiday-lights/led-voltage.svg" alt="Predicted LED voltage versus time: red switches between zero and 2.0 V, green between zero and 2.2 V, blue between zero and 3.2 V, each at its own rate." width="1000" height="470" style="max-width: 100%; height: auto; max-height: 470px;"></a></p>
+    Predicted anode-to-cathode voltage for each LED. Time zero is the end of sketch setup, not the start of the recording.
+
+<p>The GPIO switches between approximately 0 and 5 V, but <strong>the LED itself does not have the full 5 V across it</strong>. For red, about 2 V is across the LED and the remaining 3 V is across its resistor.</p>
+<div class="markdown-heading"><h3 class="heading-element">2. How many LEDs could blink independently, and how much current would they draw?</h3><a id="user-content-2-how-many-leds-could-blink-independently-and-how-much-current-would-they-draw" class="anchor" aria-label="Permalink: 2. How many LEDs could blink independently, and how much current would they draw?" href="#2-how-many-leds-could-blink-independently-and-how-much-current-would-they-draw"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>With <strong>one GPIO per LED</strong>, the UNO R3 has <strong>14 digital header pins plus six analog pins usable as digital outputs</strong>, for a theoretical total of <strong>20</strong>.</p>
+<p>For a large circuit as such, 18 LEDs split equally into six red, six green, and six blue, each with 330 Ω, would draw approximately <code>6 × 23.03 mA = 138.2 mA</code> when all are on.</p>
+<p>The pin count does not mean every pin can simultaneously supply 20 mA. The Arduino has a <strong>200 mA maximum through its pins</strong>, including its own consumption. For a lower-current 20-LED example, red LEDs with 1 kΩ each would draw approximately <code>20 × 3 mA = 60 mA</code> when all are on. External drivers can control additional LEDs beyond the direct GPIO count.</p>
+<div class="markdown-heading"><h3 class="heading-element">3. How fast must the LEDs blink before blinking is no longer visible?</h3><a id="user-content-3-how-fast-must-the-leds-blink-before-blinking-is-no-longer-visible" class="anchor" aria-label="Permalink: 3. How fast must the LEDs blink before blinking is no longer visible?" href="#3-how-fast-must-the-leds-blink-before-blinking-is-no-longer-visible"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>This would probably vary person to person, at some point after 90hz I can not longer tell that the LED is blinking, but I still feel like when I look closely at the bulb.</p>
+<div class="markdown-heading"><h3 class="heading-element">4. AI Statement</h3><a id="user-content-4-ai-statement" class="anchor" aria-label="Permalink: 4. AI Statement" href="#4-ai-statement"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>AI was used to format this Markdown document as well as generating alt texts for non-text media.</p>
+<div class="markdown-heading"><h2 class="heading-element">References</h2><a id="user-content-references" class="anchor" aria-label="Permalink: References" href="#references"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<ul>
+<li>
+<a href="https://content.arduino.cc/assets/Pinout-UNOrev3_latest.pdf" rel="nofollow">UNO R3 pinout and per-pin current specification</a>.</li>
+<li>
+<a href="https://docs.arduino.cc/learn/microcontrollers/digital-pins/" rel="nofollow">Arduino digital pins, including analog pins as digital outputs</a>.</li>
+<li>
+<a href="https://docs.arduino.cc/built-in-examples/digital/BlinkWithoutDelay/" rel="nofollow">Arduino Blink Without Delay</a>.</li>
+<li>
+<a href="https://learn.adafruit.com/all-about-leds?view=all" rel="nofollow">Adafruit LED current limiting and forward voltage</a>.</li>
+<li>
+<a href="https://ww1.microchip.com/downloads/en/devicedoc/atmel-7810-automotive-microcontrollers-atmega328p_datasheet.pdf" rel="nofollow">ATmega328P current limits</a>.</li>
+</ul>
+</article></main>
+<footer><a href="index.html">Back to the portfolio</a> · <a href="https://github.com/runkaiz/hcde439">Source on GitHub</a></footer>
+</body>
 </html>
+
