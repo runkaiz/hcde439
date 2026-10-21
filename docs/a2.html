@@ -1,18 +1,162 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="A toy that rests with a red glow and wakes into a blue and pulsing green light while its button is held." />
+<title>A2: Firefly · Runkai Zhang</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<nav aria-label="Portfolio"><a href="index.html">← All assignments</a></nav>
+<header>
+<p class="eyebrow">HCDE 439 · Assignment 2</p>
+<h1>Firefly: A Light-Up Toy Prototype</h1>
+<p>Three LEDs and a push button on an ELEGOO UNO R3</p>
+<p>Runkai Zhang · <time datetime="2026-10-20">October 20, 2026</time></p>
+</header>
+<main><article>
+<p dir="auto">Firefly is a small night-light creature built on an ELEGOO UNO R3. When nobody is touching it, the toy rests with a steady red glow. Pressing and holding the button wakes it up, which turns the red LED off, switches the blue LED fully on, and makes the green LED fade up and down quickly, about one pulse every 0.4 seconds, for as long as the button stays down. When the button is released, the toy finishes the pulse it is in the middle of and returns to its red resting glow. Everything came from the ELEGOO starter kit, and the LED wiring is the same as my holiday-lights circuit, with a push button and a 10 kΩ resistor added.</p>
+<h2 dir="auto">Schematic</h2>
+<figure>
+    <img src="projects/firefly-toy/schematic.svg" alt="Schematic: D7, D6 and D5 each drive a red, green or blue LED through its own 330 ohm resistor to ground. A push button connects 5 V to D2, and a 10 kilohm pull-down resistor connects D2 to ground." width="1000" height="760" />
+    <figcaption>Each LED has its own pin and 330 Ω resistor. The button pulls D2 up to 5 V when pressed, and the 10 kΩ resistor holds it at 0 V when released.</figcaption>
+</figure>
+<p dir="auto">Each LED has its own pin and its own 330 Ω resistor, so the program can control them independently. Red is on D7 and is only ever fully on or off, using <code class="notranslate">digitalWrite()</code>. Green and blue are on D6 and D5, which are PWM pins (marked with ~), so <code class="notranslate">analogWrite()</code> can set their brightness. The program fades green and holds blue at full brightness. The button connects 5 V to D2, and a 10 kΩ resistor connects D2 to ground.</p>
+<p dir="auto"><strong>LED resistors.</strong> I wanted each LED to draw no more than about 10 mA, which leaves a comfortable margin below the UNO's 20 mA rating per pin. When a pin is HIGH it supplies about 5 V, and the LED takes its forward voltage out of that, so the resistor has to absorb the rest. I assumed typical forward voltages of 2.0 V for red, 2.2 V for green, and 3.2 V for blue (typical figures, not measured). Red has the lowest forward voltage, so it sets the worst case:</p>
+<p dir="auto">R = (V<sub>pin</sub> − V<sub>f</sub>) / I = (5 V − 2.0 V) / 0.010 A = 300 Ω</p>
+<p dir="auto">The next standard value up in the kit is 330 Ω, and I used it for all three LEDs:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>LED</th>
+<th>Assumed V<sub>f</sub></th>
+<th>Current with 330 Ω</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Red</td>
+<td>2.0 V</td>
+<td>(5 − 2.0) / 330 = 9.1 mA</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>2.2 V</td>
+<td>(5 − 2.2) / 330 = 8.5 mA</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td>3.2 V</td>
+<td>(5 − 3.2) / 330 = 5.5 mA</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p dir="auto">For the green LED, this is the current during the on part of each PWM cycle, so its average current goes down as it dims.</p>
+<p dir="auto"><strong>Button resistor.</strong> A pressed button has almost no resistance, so if it connected 5 V directly to ground it would short the supply. The 10 kΩ resistor sits in that path and limits the current to 5 V / 10,000 Ω = 0.5 mA when the button is pressed, which is small enough to waste almost no power. It also keeps D2 from floating when the button is released, because an unconnected input picks up noise and reads HIGH or LOW at random, and the resistor holds it at 0 V instead. A much smaller resistor, such as 100 Ω, would draw 50 mA every time the button is pressed, while a much larger one, such as 1 MΩ, would hold the input LOW so weakly that noise could still flip it. 10 kΩ is the usual value between those extremes and comes in the kit. The result is that D2 reads LOW when the button is released and HIGH when it is pressed.</p>
+<h2 dir="auto">Circuit</h2>
+<figure>
+    <img src="projects/firefly-toy/circuit-photo.jpg" alt="My ELEGOO UNO R3 wired to a breadboard with red, green and blue LEDs, their resistors, and a push button, with the red LED lit." width="1200" height="1600" />
+    <figcaption>My assembled circuit at rest, with only the red LED lit.</figcaption>
+</figure>
+<p dir="auto">The UNO is on the right and connects to the breadboard with jumpers. The three LEDs sit on the left side of the board, each in series with its 330 Ω resistor, and their short legs return to the ground rail. The push button straddles the center gap, with one leg on the 5 V rail and the diagonally opposite leg on a row that also holds the jumper to D2 and the 10 kΩ resistor to ground.</p>
+<h2 dir="auto">Firmware</h2>
+<p dir="auto"><a href="projects/firefly-toy/firefly_toy.ino">Download the Arduino sketch</a>.</p>
+<div class="highlight highlight-source-c++" dir="auto"><pre class="notranslate"><span class="pl-c"><span class="pl-c">//</span> Name the digital pin that drives the red "resting" LED on or off.</span>
+<span class="pl-k">const</span> byte <span class="pl-c1">RED_PIN</span> = <span class="pl-c1">7</span>;
+<span class="pl-c"><span class="pl-c">//</span> Name the PWM pin that drives the green "sparkle" LED.</span>
+<span class="pl-k">const</span> byte <span class="pl-c1">GREEN_PIN</span> = <span class="pl-c1">6</span>;
+<span class="pl-c"><span class="pl-c">//</span> Name the PWM pin that drives the blue "awake" LED.</span>
+<span class="pl-k">const</span> byte <span class="pl-c1">BLUE_PIN</span> = <span class="pl-c1">5</span>;
+<span class="pl-c"><span class="pl-c">//</span> Name the input pin connected to the push button.</span>
+<span class="pl-k">const</span> byte <span class="pl-c1">BUTTON_PIN</span> = <span class="pl-c1">2</span>;
+<span class="pl-c"><span class="pl-c">//</span> Set how much the PWM brightness changes on each fade step.</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">FADE_STEP</span> = <span class="pl-c1">5</span>;
+<span class="pl-c"><span class="pl-c">//</span> Set the pause between green steps so the sparkle pulses quickly.</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">SPARKLE_DELAY_MS</span> = <span class="pl-c1">4</span>;
 
-    <title>Example Student's HCDE 439 Physical Computing Page!</title>
+<span class="pl-c"><span class="pl-c">//</span> Run the initialization once after reset.</span>
+<span class="pl-k">void</span> <span class="pl-en">setup</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Configure the red LED pin as an output.</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">RED_PIN</span>, <span class="pl-c1">OUTPUT</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Configure the green LED pin as an output.</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">GREEN_PIN</span>, <span class="pl-c1">OUTPUT</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Configure the blue LED pin as an output.</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">BLUE_PIN</span>, <span class="pl-c1">OUTPUT</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Configure the button pin as an input; the external 10 kΩ resistor pulls it LOW.</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">BUTTON_PIN</span>, <span class="pl-c1">INPUT</span>);
+}
 
-    <link href="style.css" rel="stylesheet" type="text/css" />
-  </head>
-  <body>
-    <h1>Example Student's Assignment 2!</h1>
-    <div class="header">
-      <img src="red-panda.jpg" />
-      <p>Here is all the documentation for assignment 2!</p>
-    </div>
-  </body>
+<span class="pl-c"><span class="pl-c">//</span> Repeat continuously, choosing the toy's mode from the button.</span>
+<span class="pl-k">void</span> <span class="pl-en">loop</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Read the button: HIGH means pressed, LOW means released.</span>
+  <span class="pl-k">if</span> (<span class="pl-c1">digitalRead</span>(<span class="pl-c1">BUTTON_PIN</span>) == <span class="pl-c1">HIGH</span>) {
+    <span class="pl-c"><span class="pl-c">//</span> Play the awake light show while the button is held.</span>
+    <span class="pl-c1">sparkle</span>();
+  } <span class="pl-k">else</span> {
+    <span class="pl-c"><span class="pl-c">//</span> Show the resting glow while the button is released.</span>
+    <span class="pl-c1">rest</span>();
+  }
+}
+
+<span class="pl-c"><span class="pl-c">//</span> Glow red steadily with green and blue off.</span>
+<span class="pl-k">void</span> <span class="pl-en">rest</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Turn the green sparkle LED off.</span>
+  <span class="pl-c1">analogWrite</span>(<span class="pl-c1">GREEN_PIN</span>, <span class="pl-c1">0</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Turn the blue awake LED off.</span>
+  <span class="pl-c1">analogWrite</span>(<span class="pl-c1">BLUE_PIN</span>, <span class="pl-c1">0</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Turn the red resting LED fully on.</span>
+  <span class="pl-c1">digitalWrite</span>(<span class="pl-c1">RED_PIN</span>, <span class="pl-c1">HIGH</span>);
+}
+
+<span class="pl-c"><span class="pl-c">//</span> Turn red off, hold blue on, and pulse green once while the button is held.</span>
+<span class="pl-k">void</span> <span class="pl-en">sparkle</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Turn the red resting LED off while the toy is awake.</span>
+  <span class="pl-c1">digitalWrite</span>(<span class="pl-c1">RED_PIN</span>, <span class="pl-c1">LOW</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Turn the blue awake LED fully on.</span>
+  <span class="pl-c1">analogWrite</span>(<span class="pl-c1">BLUE_PIN</span>, <span class="pl-c1">255</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Step the green brightness up from 0 to 255.</span>
+  <span class="pl-k">for</span> (<span class="pl-k">int</span> brightness = <span class="pl-c1">0</span>; brightness &lt;= <span class="pl-c1">255</span>; brightness += <span class="pl-c1">FADE_STEP</span>) {
+    <span class="pl-c"><span class="pl-c">//</span> Set the green LED to the current PWM brightness.</span>
+    <span class="pl-c1">analogWrite</span>(<span class="pl-c1">GREEN_PIN</span>, brightness);
+    <span class="pl-c"><span class="pl-c">//</span> Hold this brightness briefly so the pulse is quick but visible.</span>
+    <span class="pl-c1">delay</span>(<span class="pl-c1">SPARKLE_DELAY_MS</span>);
+  }
+  <span class="pl-c"><span class="pl-c">//</span> Step the green brightness back down from 255 to 0.</span>
+  <span class="pl-k">for</span> (<span class="pl-k">int</span> brightness = <span class="pl-c1">255</span>; brightness &gt;= <span class="pl-c1">0</span>; brightness -= <span class="pl-c1">FADE_STEP</span>) {
+    <span class="pl-c"><span class="pl-c">//</span> Set the green LED to the current PWM brightness.</span>
+    <span class="pl-c1">analogWrite</span>(<span class="pl-c1">GREEN_PIN</span>, brightness);
+    <span class="pl-c"><span class="pl-c">//</span> Hold this brightness briefly so the pulse is quick but visible.</span>
+    <span class="pl-c1">delay</span>(<span class="pl-c1">SPARKLE_DELAY_MS</span>);
+  }
+}</pre></div>
+<p dir="auto">The sketch uses two <code class="notranslate">for</code> loops, one to fade the green LED up and one to fade it back down. <code class="notranslate">loop()</code> checks the button with <code class="notranslate">digitalRead()</code> each time it runs. While the button is released, the resting state takes almost no time, so a press is noticed within a fraction of a millisecond. While the button is held, each green pulse runs to completion (about 0.42 seconds) before the button is checked again, which is why the toy finishes its current pulse after the button is let go.</p>
+<h2 dir="auto">Operation</h2>
+<figure>
+    <img src="projects/firefly-toy/circuit-operation.gif" alt="Recording of the toy: the red LED glows, then while the button is held red turns off, blue turns on, and green pulses, then red returns after release." width="360" height="384" />
+    <figcaption>About 11 seconds from my recording of the circuit: resting, held, and released again.</figcaption>
+</figure>
+<p dir="auto">The clip starts with the toy at rest, showing only the red LED. When the button is pressed, red turns off, blue comes on at full brightness, and green pulses. After the button is released, the toy returns to the steady red glow.</p>
+<h2 dir="auto">Question 1: voltage across an LED with <code class="notranslate">analogWrite()</code></h2>
+<figure>
+    <img src="projects/firefly-toy/pwm-voltage.svg" alt="Predicted voltage across the green LED for analogWrite 64, 128 and 255: square waves between 0 and 2.2 V that are on 25 percent, 50 percent and 100 percent of each 1.024 ms period." width="1000" height="750" />
+    <figcaption>Predicted voltage across the green LED on D6 for three <code>analogWrite()</code> values.</figcaption>
+</figure>
+<p dir="auto"><code class="notranslate">analogWrite()</code> does not produce a lower steady voltage. It switches the pin fully on and fully off very quickly, and the value from 0 to 255 sets the fraction of each cycle the pin spends on. On the UNO, pins 5 and 6 switch at about 977 Hz, which gives a period of 1.024 ms. The chart shows the green LED on D6. While the pin is HIGH, the LED has roughly its forward voltage across it (2.2 V, assumed), and the 330 Ω resistor takes the remaining 2.8 V. While the pin is LOW, both are at 0 V. At <code class="notranslate">analogWrite(led, 64)</code> the LED is on for 25.1% of each cycle (0.257 ms), at 128 it is on for 50.2% (0.514 ms), and at 255 it stays on continuously. The switching is far too fast to see, so the eye averages it into a dimmer or brighter glow. These waveforms are predictions from the PWM settings, not oscilloscope measurements.</p>
+<h2 dir="auto">Question 2: total current and battery life</h2>
+<p dir="auto">If all three LEDs were fully on at once, they would draw about 9.1 + 8.5 + 5.5 = 23.0 mA, plus 0.5 mA through the button resistor while the button is pressed, for roughly 23.5 mA. My sketch never actually does this, since red is off whenever green and blue are on, so this is a worst case. Each LED stays well under the 20 mA recommended limit for a single pin, and the total is far below the ATmega328P's 200 mA absolute maximum through its power and ground pins, so the circuit is comfortably within the Arduino's limits.</p>
+<p dir="auto">Counting only the external circuit, a 1200 mAh battery would last about 1200 mAh / 23.5 mA ≈ 51 hours. That leaves out the UNO board itself, which draws its own current for the microcontroller, the USB chip, the voltage regulator, and the power LED. Using an estimate of about 50 mA for the board (not measured), the total becomes 1200 / (23.5 + 50) ≈ 16 hours. Real batteries rarely deliver their full rated capacity, so the actual runtime would be somewhat shorter. In normal use, at most two LEDs are lit at a time and green spends much of each pulse dimmed, so the LEDs' share of the current would be lower than this worst case.</p>
+<h2 dir="auto">Question 3: measured LED voltage</h2>
+<p dir="auto">I measured the voltage across the red LED while the toy was resting, because that is when red stays steadily on, whereas the fading green LED switches on and off too quickly for a multimeter to give a stable reading. I read about 1.9 V, slightly below the 2.0 V I assumed in my resistor calculation and within the usual range of 1.8 to 2.2 V for red LEDs. An LED's forward voltage rises with current, and typical datasheet values are often given at 20 mA, while this LED runs at about 9 mA, which would explain a slightly lower reading. The UNO's pin also sags a little under load, to roughly 4.8 to 4.9 V, which puts the current at about (4.85 − 1.9) / 330 ≈ 8.9 mA, close to the 9.1 mA I calculated. The remaining difference comes from the particular LED, its temperature, and the accuracy of the meter.</p>
+<h2 dir="auto">Question 4: AI use</h2>
+<h2 dir="auto">References</h2>
+<ul dir="auto">
+<li><a href="https://docs.arduino.cc/language-reference/en/functions/analog-io/analogWrite/" rel="nofollow">Arduino <code class="notranslate">analogWrite()</code> and PWM frequencies</a>.</li>
+<li><a href="https://docs.arduino.cc/built-in-examples/digital/Button/" rel="nofollow">Arduino button example with a pull-down resistor</a>.</li>
+<li><a href="https://content.arduino.cc/assets/Pinout-UNOrev3_latest.pdf" rel="nofollow">UNO R3 pinout and per-pin current specification</a>.</li>
+<li><a href="https://learn.adafruit.com/all-about-leds?view=all" rel="nofollow">Adafruit LED current limiting and forward voltage</a>.</li>
+<li><a href="https://ww1.microchip.com/downloads/en/devicedoc/atmel-7810-automotive-microcontrollers-atmega328p_datasheet.pdf" rel="nofollow">ATmega328P current limits</a>.</li>
+</ul></article></main>
+<footer><a href="index.html">Back to the portfolio</a> · <a href="https://github.com/runkaiz/hcde439">Source on GitHub</a></footer>
+</body>
 </html>

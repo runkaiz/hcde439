@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="760" viewBox="0 0 1000 760" role="img" aria-labelledby="title description">
+<title id="title">Firefly toy schematic: UNO R3, three LEDs and a push button</title>
+<desc id="description">D7 drives a red LED, D6 a green LED and D5 a blue LED, each through its own 330 ohm resistor to ground. A push button connects 5 V to D2, and a 10 kilohm pull-down resistor connects D2 to ground.</desc>
+<rect width="1000" height="760" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#14213d}.wire{fill:none;stroke:#14213d;stroke-width:3}.label{font-size:19px}.small{font-size:16px}</style>
+<text x="50" y="55" font-size="29" font-weight="bold">Firefly toy: three LEDs and a push button</text>
+<text x="50" y="85" class="label">ELEGOO UNO R3 · USB power · one resistor per LED · 10 kΩ pull-down on the button</text>
+<rect x="50" y="130" width="220" height="520" rx="10" fill="#edf4f8" stroke="#14213d" stroke-width="3"/>
+<text x="75" y="390" font-size="24" font-weight="bold">UNO R3</text>
+<text x="75" y="422" class="small">USB → 5 V supply</text>
+<!-- Red LED on D7 -->
+<text x="217" y="168" class="label">D7</text>
+<path class="wire" d="M270 180 H340 m80 0 H520 M560 180 H690"/>
+<rect x="340" y="168" width="80" height="24" fill="white" stroke="#14213d" stroke-width="3"/>
+<text x="340" y="150" class="label">R1: 330 Ω</text>
+<path d="M520 161 L560 180 L520 199 Z" fill="#ffebee" stroke="#14213d" stroke-width="3"/>
+<path class="wire" d="M560 158 V202 M550 151 l19 -19 m-10 0 h10 v10 M567 160 l19 -19 m-10 0 h10 v10"/>
+<text x="725" y="174" class="label">LED 1: red (digitalWrite)</text>
+<text x="725" y="200" class="small">≈9.1 mA when ON</text>
+<text x="496" y="224" class="small">A (+)</text><text x="562" y="224" class="small">K (−)</text>
+<circle cx="690" cy="180" r="5" fill="#14213d"/>
+<!-- Green LED on D6 -->
+<text x="217" y="288" class="label">D6~</text>
+<path class="wire" d="M270 300 H340 m80 0 H520 M560 300 H690"/>
+<rect x="340" y="288" width="80" height="24" fill="white" stroke="#14213d" stroke-width="3"/>
+<text x="340" y="270" class="label">R2: 330 Ω</text>
+<path d="M520 281 L560 300 L520 319 Z" fill="#e8f5e9" stroke="#14213d" stroke-width="3"/>
+<path class="wire" d="M560 278 V322 M550 271 l19 -19 m-10 0 h10 v10 M567 280 l19 -19 m-10 0 h10 v10"/>
+<text x="725" y="294" class="label">LED 2: green (PWM fade)</text>
+<text x="725" y="320" class="small">≈8.5 mA at full ON</text>
+<text x="496" y="344" class="small">A (+)</text><text x="562" y="344" class="small">K (−)</text>
+<circle cx="690" cy="300" r="5" fill="#14213d"/>
+<!-- Blue LED on D5 -->
+<text x="217" y="408" class="label">D5~</text>
+<path class="wire" d="M270 420 H340 m80 0 H520 M560 420 H690"/>
+<rect x="340" y="408" width="80" height="24" fill="white" stroke="#14213d" stroke-width="3"/>
+<text x="340" y="390" class="label">R3: 330 Ω</text>
+<path d="M520 401 L560 420 L520 439 Z" fill="#e3f2fd" stroke="#14213d" stroke-width="3"/>
+<path class="wire" d="M560 398 V442 M550 391 l19 -19 m-10 0 h10 v10 M567 400 l19 -19 m-10 0 h10 v10"/>
+<text x="725" y="414" class="label">LED 3: blue (analogWrite)</text>
+<text x="725" y="440" class="small">≈5.5 mA at full ON</text>
+<text x="496" y="464" class="small">A (+)</text><text x="562" y="464" class="small">K (−)</text>
+<circle cx="690" cy="420" r="5" fill="#14213d"/>
+<!-- Button: 5V -> switch -> D2 node; D2 node -> 10k -> GND -->
+<text x="217" y="508" class="label">5V</text>
+<text x="217" y="568" class="label">D2</text>
+<path class="wire" d="M270 500 H360 M440 500 H520 V560 M270 560 H520 V580 M520 640 V690"/>
+<circle cx="360" cy="500" r="5" fill="white" stroke="#14213d" stroke-width="3"/>
+<circle cx="440" cy="500" r="5" fill="white" stroke="#14213d" stroke-width="3"/>
+<path class="wire" d="M355 482 H445 M400 482 V468 M388 468 H412"/>
+<text x="345" y="460" class="label">S1: push button</text>
+<circle cx="520" cy="560" r="5" fill="#14213d"/>
+<rect x="508" y="580" width="24" height="60" fill="white" stroke="#14213d" stroke-width="3"/>
+<text x="400" y="606" class="label">R4: 10 kΩ</text>
+<text x="400" y="630" class="small">pull-down</text>
+<!-- Shared ground -->
+<path class="wire" d="M690 180 V700 M270 620 H330 V690 M330 690 H690 M672 700 H708 M679 708 H701 M686 716 H694"/>
+<circle cx="520" cy="690" r="5" fill="#14213d"/>
+<circle cx="330" cy="690" r="5" fill="#14213d"/>
+<text x="213" y="628" class="label">GND</text>
+<text x="725" y="680" class="label">Shared ground</text>
+<text x="50" y="735" class="small">LED long leg (anode) → resistor; short leg (cathode) → GND. Released: D2 reads LOW through R4. Pressed: D2 reads HIGH.</text>
+<text x="50" y="755" class="small">~ marks a PWM pin. Estimated forward drops: red 2.0 V, green 2.2 V, blue 3.2 V. Actual LEDs may differ.</text>
+</svg>

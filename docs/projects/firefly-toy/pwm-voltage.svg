@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="750" viewBox="0 0 1000 750" role="img" aria-labelledby="t d">
+<title id="t">Predicted voltage across the green LED for three analogWrite values</title>
+<desc id="d">Square waves at about 977 Hz. analogWrite 64 is on about 25 percent of each 1.024 ms period, 128 about 50 percent, and 255 is on continuously. On-voltage is the assumed 2.2 V forward drop; off is 0 V.</desc>
+<rect width="1000" height="750" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#14213d}.ax{stroke:#14213d;stroke-width:2;fill:none}.grid{stroke:#c9d3dd;stroke-width:1;stroke-dasharray:4 4}.small{font-size:15px}.label{font-size:18px}</style>
+<text x="50" y="50" font-size="27" font-weight="bold">Voltage across the green LED (D6) with analogWrite()</text>
+<text x="50" y="80" class="label">Predicted, not measured · D6 PWM ≈ 977 Hz (period 1.024 ms) · assumed V<tspan font-size="13" dy="4">f</tspan><tspan dy="-4"> = 2.2 V</tspan></text>
+<path class="ax" d="M120 120 V260 H940"/>
+<text x="108" y="265.0" class="small" text-anchor="end">0 V</text>
+<text x="108" y="217.0" class="small" text-anchor="end">1 V</text>
+<text x="108" y="169.0" class="small" text-anchor="end">2 V</text>
+<line class="grid" x1="120" x2="940" y1="154.4" y2="154.4"/>
+<text x="948" y="159.4" class="small">2.2 V</text>
+<path d="M120.0 260.0 V154.4 H188.6 V260.0 H393.3 V154.4 H461.9 V260.0 H666.7 V154.4 H735.3 V260.0 H940.0" fill="none" stroke="#1b7f3b" stroke-width="3.5"/>
+<text x="120" y="108" class="label" font-weight="bold">analogWrite(led, 64)</text>
+<text x="370" y="108" class="small">duty 25.1% · on 0.257 ms of each 1.024 ms · average ≈ 0.55 V</text>
+<path class="ax" d="M120 310 V450 H940"/>
+<text x="108" y="455.0" class="small" text-anchor="end">0 V</text>
+<text x="108" y="407.0" class="small" text-anchor="end">1 V</text>
+<text x="108" y="359.0" class="small" text-anchor="end">2 V</text>
+<line class="grid" x1="120" x2="940" y1="344.4" y2="344.4"/>
+<text x="948" y="349.4" class="small">2.2 V</text>
+<path d="M120.0 450.0 V344.4 H257.2 V450.0 H393.3 V344.4 H530.5 V450.0 H666.7 V344.4 H803.9 V450.0 H940.0" fill="none" stroke="#1b7f3b" stroke-width="3.5"/>
+<text x="120" y="298" class="label" font-weight="bold">analogWrite(led, 128)</text>
+<text x="370" y="298" class="small">duty 50.2% · on 0.514 ms of each 1.024 ms · average ≈ 1.10 V</text>
+<path class="ax" d="M120 500 V640 H940"/>
+<text x="108" y="645.0" class="small" text-anchor="end">0 V</text>
+<text x="108" y="597.0" class="small" text-anchor="end">1 V</text>
+<text x="108" y="549.0" class="small" text-anchor="end">2 V</text>
+<line class="grid" x1="120" x2="940" y1="534.4" y2="534.4"/>
+<text x="948" y="539.4" class="small">2.2 V</text>
+<path d="M120.0 534.4 H940.0" fill="none" stroke="#1b7f3b" stroke-width="3.5"/>
+<text x="120" y="488" class="label" font-weight="bold">analogWrite(led, 255)</text>
+<text x="370" y="488" class="small">duty 100.0% · always on · average ≈ 2.20 V</text>
+<text x="120.0" y="664" class="small" text-anchor="middle">0.000</text>
+<text x="393.3" y="664" class="small" text-anchor="middle">1.024</text>
+<text x="666.7" y="664" class="small" text-anchor="middle">2.048</text>
+<text x="940.0" y="664" class="small" text-anchor="middle">3.072</text>
+<text x="530.0" y="692" class="label" text-anchor="middle">Time (ms)</text>
+<text x="50" y="736" class="small">While the pin is HIGH the 5 V splits: ≈2.2 V across the LED, ≈2.8 V across the 330 Ω resistor. While LOW, both are 0 V.</text>
+</svg>
