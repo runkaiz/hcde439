@@ -1,0 +1,160 @@
+t_ms=0 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=111 | A0=281 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=225 | A0=282 | V=1.38 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=338 | A0=283 | V=1.38 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=452 | A0=283 | V=1.38 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=567 | A0=284 | V=1.39 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=680 | A0=282 | V=1.38 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=794 | A0=283 | V=1.38 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=908 | A0=283 | V=1.38 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=1021 | A0=283 | V=1.38 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=1136 | A0=282 | V=1.38 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=1251 | A0=282 | V=1.38 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=1367 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=1481 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=1596 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=1711 | A0=278 | V=1.36 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=1825 | A0=278 | V=1.36 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=1940 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=2056 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=2170 | A0=275 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=2285 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=2400 | A0=275 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=2514 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=2629 | A0=275 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=2745 | A0=273 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=2860 | A0=271 | V=1.32 V | daylight PWM=43 night PWM=212 | room light OK
+t_ms=2974 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=3089 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=3204 | A0=274 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=3318 | A0=274 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=3433 | A0=198 | V=0.97 V | daylight PWM=22 night PWM=233 | room light OK
+t_ms=3549 | A0=98 | V=0.48 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=3685 | A0=91 | V=0.44 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=3822 | A0=87 | V=0.43 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=3958 | A0=87 | V=0.43 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4096 | A0=88 | V=0.43 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4232 | A0=85 | V=0.42 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4369 | A0=86 | V=0.42 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4505 | A0=88 | V=0.43 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4642 | A0=87 | V=0.43 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4779 | A0=83 | V=0.41 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=4916 | A0=85 | V=0.42 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=5052 | A0=99 | V=0.48 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=5189 | A0=103 | V=0.50 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=5326 | A0=96 | V=0.47 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=5464 | A0=100 | V=0.49 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=5601 | A0=241 | V=1.18 V | daylight PWM=35 night PWM=220 | room light OK
+t_ms=5715 | A0=261 | V=1.28 V | daylight PWM=40 night PWM=215 | room light OK
+t_ms=5830 | A0=267 | V=1.30 V | daylight PWM=42 night PWM=213 | room light OK
+t_ms=5946 | A0=271 | V=1.32 V | daylight PWM=43 night PWM=212 | room light OK
+t_ms=6061 | A0=271 | V=1.32 V | daylight PWM=43 night PWM=212 | room light OK
+t_ms=6175 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6290 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6405 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6519 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6634 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6750 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6864 | A0=272 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=6979 | A0=274 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7094 | A0=273 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7208 | A0=273 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7323 | A0=273 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7439 | A0=274 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7554 | A0=273 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7668 | A0=275 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=7783 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=7898 | A0=275 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=8012 | A0=273 | V=1.33 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=8128 | A0=877 | V=4.29 V | daylight PWM=219 night PWM=36 | room light OK
+t_ms=8243 | A0=884 | V=4.32 V | daylight PWM=221 night PWM=34 | room light OK
+t_ms=8357 | A0=910 | V=4.45 V | daylight PWM=228 night PWM=27 | room light OK
+t_ms=8472 | A0=918 | V=4.49 V | daylight PWM=231 night PWM=24 | room light OK
+t_ms=8587 | A0=925 | V=4.52 V | daylight PWM=233 night PWM=22 | room light OK
+t_ms=8701 | A0=922 | V=4.51 V | daylight PWM=232 night PWM=23 | room light OK
+t_ms=8816 | A0=918 | V=4.49 V | daylight PWM=231 night PWM=24 | room light OK
+t_ms=8932 | A0=910 | V=4.45 V | daylight PWM=228 night PWM=27 | room light OK
+t_ms=9047 | A0=913 | V=4.46 V | daylight PWM=229 night PWM=26 | room light OK
+t_ms=9161 | A0=917 | V=4.48 V | daylight PWM=230 night PWM=25 | room light OK
+t_ms=9276 | A0=905 | V=4.42 V | daylight PWM=227 night PWM=28 | room light OK
+t_ms=9391 | A0=901 | V=4.40 V | daylight PWM=226 night PWM=29 | room light OK
+t_ms=9505 | A0=892 | V=4.36 V | daylight PWM=223 night PWM=32 | room light OK
+t_ms=9621 | A0=882 | V=4.31 V | daylight PWM=220 night PWM=35 | room light OK
+t_ms=9736 | A0=874 | V=4.27 V | daylight PWM=218 night PWM=37 | room light OK
+t_ms=9850 | A0=872 | V=4.26 V | daylight PWM=217 night PWM=38 | room light OK
+t_ms=9965 | A0=870 | V=4.25 V | daylight PWM=217 night PWM=38 | room light OK
+t_ms=10080 | A0=869 | V=4.25 V | daylight PWM=217 night PWM=38 | room light OK
+t_ms=10195 | A0=868 | V=4.24 V | daylight PWM=216 night PWM=39 | room light OK
+t_ms=10312 | A0=869 | V=4.25 V | daylight PWM=217 night PWM=38 | room light OK
+t_ms=10428 | A0=872 | V=4.26 V | daylight PWM=217 night PWM=38 | room light OK
+t_ms=10544 | A0=874 | V=4.27 V | daylight PWM=218 night PWM=37 | room light OK
+t_ms=10659 | A0=875 | V=4.28 V | daylight PWM=218 night PWM=37 | room light OK
+t_ms=10775 | A0=855 | V=4.18 V | daylight PWM=212 night PWM=43 | room light OK
+t_ms=10891 | A0=867 | V=4.24 V | daylight PWM=216 night PWM=39 | room light OK
+t_ms=11008 | A0=874 | V=4.27 V | daylight PWM=218 night PWM=37 | room light OK
+t_ms=11123 | A0=885 | V=4.33 V | daylight PWM=221 night PWM=34 | room light OK
+t_ms=11239 | A0=888 | V=4.34 V | daylight PWM=222 night PWM=33 | room light OK
+t_ms=11355 | A0=896 | V=4.38 V | daylight PWM=224 night PWM=31 | room light OK
+t_ms=11470 | A0=899 | V=4.39 V | daylight PWM=225 night PWM=30 | room light OK
+t_ms=11586 | A0=896 | V=4.38 V | daylight PWM=224 night PWM=31 | room light OK
+t_ms=11703 | A0=895 | V=4.37 V | daylight PWM=224 night PWM=31 | room light OK
+t_ms=11819 | A0=894 | V=4.37 V | daylight PWM=224 night PWM=31 | room light OK
+t_ms=11934 | A0=790 | V=3.86 V | daylight PWM=194 night PWM=61 | room light OK
+t_ms=12050 | A0=497 | V=2.43 V | daylight PWM=109 night PWM=146 | room light OK
+t_ms=12167 | A0=367 | V=1.79 V | daylight PWM=71 night PWM=184 | room light OK
+t_ms=12283 | A0=316 | V=1.54 V | daylight PWM=56 night PWM=199 | room light OK
+t_ms=12399 | A0=313 | V=1.53 V | daylight PWM=55 night PWM=200 | room light OK
+t_ms=12515 | A0=346 | V=1.69 V | daylight PWM=65 night PWM=190 | room light OK
+t_ms=12631 | A0=645 | V=3.15 V | daylight PWM=152 night PWM=103 | room light OK
+t_ms=12747 | A0=927 | V=4.53 V | daylight PWM=233 night PWM=22 | room light OK
+t_ms=12863 | A0=907 | V=4.43 V | daylight PWM=228 night PWM=27 | room light OK
+t_ms=12980 | A0=896 | V=4.38 V | daylight PWM=224 night PWM=31 | room light OK
+t_ms=13095 | A0=892 | V=4.36 V | daylight PWM=223 night PWM=32 | room light OK
+t_ms=13211 | A0=876 | V=4.28 V | daylight PWM=219 night PWM=36 | room light OK
+t_ms=13327 | A0=853 | V=4.17 V | daylight PWM=212 night PWM=43 | room light OK
+t_ms=13443 | A0=847 | V=4.14 V | daylight PWM=210 night PWM=45 | room light OK
+t_ms=13558 | A0=704 | V=3.44 V | daylight PWM=169 night PWM=86 | room light OK
+t_ms=13675 | A0=530 | V=2.59 V | daylight PWM=118 night PWM=137 | room light OK
+t_ms=13792 | A0=440 | V=2.15 V | daylight PWM=92 night PWM=163 | room light OK
+t_ms=13907 | A0=399 | V=1.95 V | daylight PWM=80 night PWM=175 | room light OK
+t_ms=14023 | A0=346 | V=1.69 V | daylight PWM=65 night PWM=190 | room light OK
+t_ms=14139 | A0=319 | V=1.56 V | daylight PWM=57 night PWM=198 | room light OK
+t_ms=14256 | A0=294 | V=1.44 V | daylight PWM=50 night PWM=205 | room light OK
+t_ms=14371 | A0=282 | V=1.38 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=14487 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=14603 | A0=278 | V=1.36 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=14718 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=14834 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=14951 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=15067 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=15182 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=15298 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=15414 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=15529 | A0=278 | V=1.36 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=15646 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=15762 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=15878 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=15993 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=16109 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=16226 | A0=278 | V=1.36 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=16342 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=16457 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=16573 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=16689 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=16804 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=16921 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=17037 | A0=275 | V=1.34 V | daylight PWM=44 night PWM=211 | room light OK
+t_ms=17153 | A0=277 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=17268 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=17384 | A0=276 | V=1.35 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=17500 | A0=278 | V=1.36 V | daylight PWM=45 night PWM=210 | room light OK
+t_ms=17616 | A0=279 | V=1.36 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=17732 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=17848 | A0=281 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=17964 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=18079 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=18195 | A0=281 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=18312 | A0=281 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=18427 | A0=281 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=18543 | A0=280 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK
+t_ms=18659 | A0=281 | V=1.37 V | daylight PWM=46 night PWM=209 | room light OK

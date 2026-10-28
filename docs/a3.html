@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="A small wall indicator that fades from green to blue as a room loses daylight, and turns red when the lights should be on." />
+<title>A3: Daylight Monitor · Runkai Zhang</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<nav aria-label="Portfolio"><a href="index.html">← All assignments</a></nav>
+<header>
+<p class="eyebrow">HCDE 439 · Assignment 3</p>
+<h1>Daylight Monitor: A Light-Sensing Room Indicator</h1>
+<p>A photoresistor voltage divider driving three LEDs on an ELEGOO UNO R3</p>
+<p>Runkai Zhang · <time datetime="2026-10-27">October 27, 2026</time></p>
+</header>
+<main><article>
+<p>The prompt for this assignment was a smart home prototype that senses something around the home, and the thing I wanted to see was how much daylight a room is actually getting, since that is the signal I end up ignoring until I notice I have been working in the dark. The Daylight Monitor reads a photoresistor and turns that reading into three LEDs. Green gets brighter as the room gets brighter, blue gets brighter as the room gets darker, like a night light taking over, and red turns on when the room is dim enough that the lights should probably be on. Everything came from the ELEGOO starter kit, and I drew the schematic in KiCad this time instead of by hand.</p>
+<h2>Schematic</h2>
+<figure>
+    <img src="projects/daylight-monitor/schematic.png" alt="KiCad schematic: 5 V connects through a photoresistor R1 to node LIGHT_SENSE, which goes to A0 and through a 10 kilohm resistor R2 to ground. D7, D6 and D5 each drive a red, green or blue LED through its own 330 ohm resistor to ground." width="1477" height="716" />
+    <figcaption>KiCad schematic. The photoresistor (R1) and the 10 kΩ resistor (R2) form a voltage divider whose midpoint goes to A0. Each LED has its own pin and 330 Ω resistor. KiCad's electrical rules check passes with no errors. <a href="projects/daylight-monitor/daylight_monitor.kicad_sch">KiCad file</a> · <a href="projects/daylight-monitor/daylight_monitor.pdf">PDF</a></figcaption>
+</figure>
+<p>The sensor half of the circuit is a voltage divider. The photoresistor runs from 5 V to a shared node, a 10 kΩ resistor runs from that node to ground, and A0 reads the voltage at the node. A photoresistor's resistance drops as more light hits it, so with the photoresistor on top, more light means a higher voltage at A0:</p>
+<p>V<sub>A0</sub> = 5 V × R2 / (R1 + R2) = 5 V × 10 kΩ / (R<sub>photo</sub> + 10 kΩ)</p>
+<p>The output half is the same LED arrangement I used before, rebuilt from scratch. Green is on D6 and blue is on D5, which are both PWM pins, so <code class="notranslate">analogWrite()</code> can fade them. Red is on D7, which is not a PWM pin, so it is only ever fully on or off as the alert.</p>
+<p><strong>Choosing the fixed resistor.</strong> The fixed resistor decides where the divider's output lands, and the value that gives the widest voltage swing between a bright reading and a dark reading is the geometric mean of the photoresistor's resistance at those two extremes:</p>
+<p>R2 = √(R<sub>bright</sub> × R<sub>dark</sub>)</p>
+<p>Before building anything, I estimated the photoresistor would sit around 1 kΩ under a bright light and around 100 kΩ when covered, which gives √(1 kΩ × 100 kΩ) = 10 kΩ, a value the kit has. Once the circuit was running, I worked backward from the voltages in my serial log to the photoresistor's actual resistance using R<sub>photo</sub> = 10 kΩ × (5 − V) / V:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Condition</th>
+<th>analogRead</th>
+<th>V at A0</th>
+<th>R<sub>photo</sub> (calculated)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bright light on the sensor</td>
+<td>855 to 927</td>
+<td>4.18 to 4.52 V</td>
+<td>about 1.1 to 2.0 kΩ</td>
+</tr>
+<tr>
+<td>My dim room</td>
+<td>271 to 284</td>
+<td>1.32 to 1.39 V</td>
+<td>about 26 to 28 kΩ</td>
+</tr>
+<tr>
+<td>Finger over the sensor</td>
+<td>83 to 103</td>
+<td>0.41 to 0.50 V</td>
+<td>about 89 to 113 kΩ</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>With the brightest and darkest of those, √(1.1 kΩ × 113 kΩ) ≈ 10.8 kΩ, so 10 kΩ turned out to be close to ideal for my room, not just a convenient guess. These resistances are calculated from the readings, not measured with a meter.</p>
+<p><strong>LED resistors.</strong> I kept each LED under about 10 mA, which leaves a comfortable margin below the UNO's 20 mA rating per pin. Assuming typical forward voltages of 2.0 V for red, 2.2 V for green, and 3.2 V for blue (typical figures, not measured), red is the worst case at (5 V − 2.0 V) / 0.010 A = 300 Ω, and the next kit value up is 330 Ω:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>LED</th>
+<th>Pin</th>
+<th>Assumed V<sub>f</sub></th>
+<th>Current with 330 Ω</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Red</td>
+<td>D7</td>
+<td>2.0 V</td>
+<td>(5 − 2.0) / 330 = 9.1 mA</td>
+</tr>
+<tr>
+<td>Green</td>
+<td>D6 (PWM)</td>
+<td>2.2 V</td>
+<td>(5 − 2.2) / 330 = 8.5 mA</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td>D5 (PWM)</td>
+<td>3.2 V</td>
+<td>(5 − 3.2) / 330 = 5.5 mA</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>Circuit</h2>
+<figure>
+    <img src="projects/daylight-monitor/circuit-photo.jpg" alt="My ELEGOO UNO R3 wired to a breadboard with blue, green and red LEDs and their resistors on the left, and the photoresistor and 10 kilohm resistor on the right. Blue and green are lit." width="1600" height="1200" />
+    <figcaption>My assembled circuit in my dim room. The LEDs and their 330 Ω resistors are on the left, and the photoresistor and 10 kΩ resistor are on the right, with a jumper from their shared row to A0. Blue and green are both partly on, which is what a dim room should look like.</figcaption>
+</figure>
+<h2>Firmware</h2>
+<p>The code reads A0, maps that reading onto the two PWM LEDs, and uses an if statement for the red alert. Every line with content has a comment above it.</p>
+<div class="highlight highlight-source-c++"><pre class="notranslate"><span class="pl-c"><span class="pl-c">//</span> A0 reads the voltage between the photoresistor (to 5V) and the 10k resistor (to GND)</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">SENSOR_PIN</span> = <span class="pl-c1">A0</span>;
+<span class="pl-c"><span class="pl-c">//</span> Red LED on D7 is the on/off "too dark" alert (D7 is not a PWM pin)</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">RED_PIN</span> = <span class="pl-c1">7</span>;
+<span class="pl-c"><span class="pl-c">//</span> Green LED on D6 (PWM) glows brighter as the room gets brighter</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">GREEN_PIN</span> = <span class="pl-c1">6</span>;
+<span class="pl-c"><span class="pl-c">//</span> Blue LED on D5 (PWM) glows brighter as the room gets darker</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">BLUE_PIN</span> = <span class="pl-c1">5</span>;
+
+<span class="pl-c"><span class="pl-c">//</span> Measured with a finger over the sensor: about 122 counts = 0.60 V, so R_photo is about 74k</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">DARK_READING</span> = <span class="pl-c1">120</span>;
+<span class="pl-c"><span class="pl-c">//</span> Measured under a phone flashlight: about 1000 counts = 4.89 V, so R_photo is about 230 ohms</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">BRIGHT_READING</span> = <span class="pl-c1">1000</span>;
+<span class="pl-c"><span class="pl-c">//</span> Alert below 150 counts = 0.73 V (R_photo about 58k): between covered (~122) and hand shadows (~175)</span>
+<span class="pl-k">const</span> <span class="pl-k">int</span> <span class="pl-c1">DARK_ALERT_READING</span> = <span class="pl-c1">150</span>;
+
+<span class="pl-c"><span class="pl-c">//</span> Runs once at power-up or reset</span>
+<span class="pl-k">void</span> <span class="pl-en">setup</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Open the serial port at 9600 baud so the Serial Monitor can log readings</span>
+  Serial.<span class="pl-c1">begin</span>(<span class="pl-c1">9600</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Make the red alert pin an output</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">RED_PIN</span>, <span class="pl-c1">OUTPUT</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Make the green PWM pin an output</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">GREEN_PIN</span>, <span class="pl-c1">OUTPUT</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Make the blue PWM pin an output</span>
+  <span class="pl-c1">pinMode</span>(<span class="pl-c1">BLUE_PIN</span>, <span class="pl-c1">OUTPUT</span>);
+}
+
+<span class="pl-c"><span class="pl-c">//</span> Runs over and over after setup()</span>
+<span class="pl-k">void</span> <span class="pl-en">loop</span>() {
+  <span class="pl-c"><span class="pl-c">//</span> Read the divider voltage as a 10-bit number: 0 = 0 V, 1023 = 5 V</span>
+  <span class="pl-k">int</span> lightReading = <span class="pl-c1">analogRead</span>(<span class="pl-c1">SENSOR_PIN</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Convert the reading back to volts for the serial log and the voltage graph</span>
+  <span class="pl-k">float</span> senseVolts = lightReading * <span class="pl-c1">5.0</span> / <span class="pl-c1">1023.0</span>;
+  <span class="pl-c"><span class="pl-c">//</span> Clamp to the calibrated range so map() never returns a value outside 0-255</span>
+  <span class="pl-k">int</span> clamped = <span class="pl-c1">constrain</span>(lightReading, <span class="pl-c1">DARK_READING</span>, <span class="pl-c1">BRIGHT_READING</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Scale the 10-bit light range onto the 8-bit PWM range: dark = 0, bright = 255</span>
+  <span class="pl-k">int</span> daylight = <span class="pl-c1">map</span>(clamped, <span class="pl-c1">DARK_READING</span>, <span class="pl-c1">BRIGHT_READING</span>, <span class="pl-c1">0</span>, <span class="pl-c1">255</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Scale the same range in reverse for the night light: dark = 255, bright = 0</span>
+  <span class="pl-k">int</span> nightlight = <span class="pl-c1">map</span>(clamped, <span class="pl-c1">DARK_READING</span>, <span class="pl-c1">BRIGHT_READING</span>, <span class="pl-c1">255</span>, <span class="pl-c1">0</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Set the green LED's PWM duty cycle from the daylight level</span>
+  <span class="pl-c1">analogWrite</span>(<span class="pl-c1">GREEN_PIN</span>, daylight);
+  <span class="pl-c"><span class="pl-c">//</span> Set the blue LED's PWM duty cycle from the night-light level</span>
+  <span class="pl-c1">analogWrite</span>(<span class="pl-c1">BLUE_PIN</span>, nightlight);
+
+  <span class="pl-c"><span class="pl-c">//</span> Check whether the room is dimmer than the alert threshold</span>
+  <span class="pl-k">bool</span> tooDark = lightReading &lt; <span class="pl-c1">DARK_ALERT_READING</span>;
+  <span class="pl-c"><span class="pl-c">//</span> If it is too dark, warn that the home's lights should be on</span>
+  <span class="pl-k">if</span> (tooDark) {
+    <span class="pl-c"><span class="pl-c">//</span> Turn the red alert LED on</span>
+    <span class="pl-c1">digitalWrite</span>(<span class="pl-c1">RED_PIN</span>, <span class="pl-c1">HIGH</span>);
+  } <span class="pl-k">else</span> {
+    <span class="pl-c"><span class="pl-c">//</span> Otherwise keep the red alert LED off</span>
+    <span class="pl-c1">digitalWrite</span>(<span class="pl-c1">RED_PIN</span>, <span class="pl-c1">LOW</span>);
+  }
+
+  <span class="pl-c"><span class="pl-c">//</span> Start the log line with the time since reset, for graphing voltage over time</span>
+  Serial.<span class="pl-c1">print</span>(<span class="pl-s"><span class="pl-pds">"</span>t_ms=<span class="pl-pds">"</span></span>);
+  <span class="pl-c"><span class="pl-c">//</span> Print the milliseconds since reset</span>
+  Serial.<span class="pl-c1">print</span>(<span class="pl-c1">millis</span>());
+  <span class="pl-c"><span class="pl-c">//</span> Label the raw ADC value</span>
+  Serial.<span class="pl-c1">print</span>(<span class="pl-s"><span class="pl-pds">"</span> | A0=<span class="pl-pds">"</span></span>);
+  <span class="pl-c"><span class="pl-c">//</span> Print the raw 0-1023 reading</span>
+  Serial.<span class="pl-c1">print</span>(lightReading);
+  <span class="pl-c"><span class="pl-c">//</span> Label the voltage</span>
+  Serial.<span class="pl-c1">print</span>(<span class="pl-s"><span class="pl-pds">"</span> | V=<span class="pl-pds">"</span></span>);
+  <span class="pl-c"><span class="pl-c">//</span> Print the divider voltage with two decimal places</span>
+  Serial.<span class="pl-c1">print</span>(senseVolts, <span class="pl-c1">2</span>);
+  <span class="pl-c"><span class="pl-c">//</span> Label the green and blue PWM levels</span>
+  Serial.<span class="pl-c1">print</span>(<span class="pl-s"><span class="pl-pds">"</span> V | daylight PWM=<span class="pl-pds">"</span></span>);
+  <span class="pl-c"><span class="pl-c">//</span> Print the green PWM value</span>
+  Serial.<span class="pl-c1">print</span>(daylight);
+  <span class="pl-c"><span class="pl-c">//</span> Separate the blue value</span>
+  Serial.<span class="pl-c1">print</span>(<span class="pl-s"><span class="pl-pds">"</span> night PWM=<span class="pl-pds">"</span></span>);
+  <span class="pl-c"><span class="pl-c">//</span> Print the blue PWM value</span>
+  Serial.<span class="pl-c1">print</span>(nightlight);
+  <span class="pl-c"><span class="pl-c">//</span> End the line with the alert state in words</span>
+  Serial.<span class="pl-c1">println</span>(tooDark ? <span class="pl-s"><span class="pl-pds">"</span> | ALERT: room too dark, turn lights on<span class="pl-pds">"</span></span> : <span class="pl-s"><span class="pl-pds">"</span> | room light OK<span class="pl-pds">"</span></span>);
+
+  <span class="pl-c"><span class="pl-c">//</span> Wait 100 ms so the log has 10 samples per second</span>
+  <span class="pl-c1">delay</span>(<span class="pl-c1">100</span>);
+}</pre></div>
+<p><strong>Why these values.</strong> Each constant corresponds to a voltage at A0, and I set them from my own serial readings rather than from the estimates I started with. <code class="notranslate">DARK_READING = 120</code> is roughly where a finger over the sensor put A0 (about 0.6 V) during calibration, and <code class="notranslate">BRIGHT_READING = 1000</code> is roughly a phone flashlight held right on it (about 4.9 V). <code class="notranslate">map()</code> stretches that range of the 10-bit reading, which runs from 0 to 1023, onto the 8-bit range <code class="notranslate">analogWrite()</code> accepts, which runs from 0 to 255, so the darkest reading gives green 0 and blue 255, and the brightest gives the reverse. <code class="notranslate">constrain()</code> comes first so that a reading outside the calibrated range, like the 83 I got with a tighter cover in the logged run, cannot push <code class="notranslate">map()</code> below 0 or above 255. <code class="notranslate">DARK_ALERT_READING = 150</code> is about 0.73 V. I placed it between a covered sensor (around 120) and a hand passing over it (around 175 in my first test), so the red alert only turns on when the sensor is actually dark and not every time a shadow crosses it. In my room, A0 sits around 275, which gives green about 44 and blue about 211, so the room honestly reads as mostly night light.</p>
+<p><strong>Serial output.</strong> Each line logs the time, the raw reading, the voltage, both PWM levels, and the alert state:</p>
+<pre class="notranslate"><code class="notranslate">t_ms=908 | A0=283 | V=1.38 V | daylight PWM=47 night PWM=208 | room light OK
+t_ms=4779 | A0=83 | V=0.41 V | daylight PWM=0 night PWM=255 | ALERT: room too dark, turn lights on
+t_ms=8587 | A0=925 | V=4.52 V | daylight PWM=233 night PWM=22 | room light OK
+</code></pre>
+<p>The <a href="projects/daylight-monitor/serial-log.txt">full serial log</a> has 160 lines over about 19 seconds.</p>
+<h2>Operation</h2>
+<figure>
+    <img src="projects/daylight-monitor/circuit-operation.gif" alt="Recording of the circuit: in a dim purple-lit room blue is bright and green is faint, a hand covers the photoresistor and the red LED turns on, then in brighter light green becomes the brightest LED." width="320" height="569" />
+    <figcaption>About 15 seconds from my recording. First my dim room, then my hand covering the sensor, then the circuit with more light reaching the sensor.</figcaption>
+</figure>
+<p>The clip starts in my dim room, with blue mostly on and green faint. When my hand covers the photoresistor, green goes out, blue goes to full, and the red alert turns on, then everything returns once my hand moves away. In the second half, with more light on the sensor, green takes over and blue fades down.</p>
+<h2>Question 1: can the variable resistor be R1 or R2?</h2>
+<p>It can be either one, and the position only decides which direction the voltage moves. Using the resistances from my circuit, about 1.4 kΩ in bright light, 27 kΩ in my room, and 108 kΩ covered, with the 10 kΩ fixed resistor:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Photoresistor position</th>
+<th>Formula</th>
+<th>Bright</th>
+<th>Room</th>
+<th>Covered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1, on top (my circuit)</td>
+<td>5 × 10k / (R<sub>photo</sub> + 10k)</td>
+<td>4.40 V</td>
+<td>1.34 V</td>
+<td>0.43 V</td>
+</tr>
+<tr>
+<td>R2, on the bottom</td>
+<td>5 × R<sub>photo</sub> / (R<sub>photo</sub> + 10k)</td>
+<td>0.60 V</td>
+<td>3.66 V</td>
+<td>4.57 V</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Both arrangements swing by the same 3.97 V between bright and covered, which makes sense, because the two voltages always add up to 5 V. With the photoresistor on top, more light means a higher reading, and on the bottom, more light means a lower one. Swapping them would still work, but I would have to reverse the output ranges in <code class="notranslate">map()</code> and change the alert check from <code class="notranslate">&lt;</code> to <code class="notranslate">&gt;</code>. What does not work is leaving out the fixed resistor entirely, because then there is no divider, and A0 would sit at 5 V no matter how much light there is.</p>
+<h2>Question 2: voltage at A0 over time</h2>
+<figure>
+    <img src="projects/daylight-monitor/voltage-graph.svg" alt="Line graph of measured voltage at A0 over 19 seconds: about 1.35 V in the room, a dip to about 0.4 V while covered from 3.5 to 5.5 seconds, a jump to about 4.3 to 4.5 V in bright light from 8 to 12 seconds with a brief drop, then back to about 1.35 V. A dashed line marks the 0.73 V alert threshold." width="720" height="360" />
+    <figcaption>The voltage at A0, plotted from every line of my serial log. The dashed line is the 0.73 V threshold below which the red alert turns on.</figcaption>
+</figure>
+<p>This graph comes from real readings rather than a prediction, since the sketch prints the voltage at A0 about nine times a second. I restarted the Serial Monitor after filming, so the log is from a second run of the same sequence rather than the exact clip above. The room sits around 1.35 V, covering the sensor drops it to about 0.4 V, which crosses the alert line, and bright light pushes it up to about 4.3 to 4.5 V. The short drop around 12 seconds is a moment when less light reached the sensor before it came back.</p>
+<h2>Question 3: 10-bit PWM and a 16-bit ADC</h2>
+<p>With a 16-bit ADC, <code class="notranslate">analogRead()</code> would return 0 to 65535 instead of 0 to 1023, and with 10-bit PWM, <code class="notranslate">analogWrite()</code> would accept 0 to 1023 instead of 0 to 255, so both ends of the <code class="notranslate">map()</code> call change. The output range becomes 0 to 1023:</p>
+<div class="highlight highlight-source-c++"><pre class="notranslate"><span class="pl-k">int</span> daylight = map(clamped, <span class="pl-c1">DARK_READING</span>, <span class="pl-c1">BRIGHT_READING</span>, <span class="pl-c1">0</span>, <span class="pl-c1">1023</span>);</pre></div>
+<p>The input range changes too, but only because the constants are measured in ADC counts. The same voltage now produces 2<sup>16</sup> / 2<sup>10</sup> = 64 times as many counts, so every calibration value gets multiplied by 64, <code class="notranslate">DARK_READING</code> from 120 to 7680, <code class="notranslate">BRIGHT_READING</code> from 1000 to 64000, and <code class="notranslate">DARK_ALERT_READING</code> from 150 to 9600. The voltage conversion becomes <code class="notranslate">reading * 5.0 / 65535.0</code>. One practical catch on the UNO is that an <code class="notranslate">int</code> only holds values up to 32767, so the readings and constants would need to be <code class="notranslate">long</code> or <code class="notranslate">unsigned int</code>. <code class="notranslate">map()</code> itself already uses <code class="notranslate">long</code> math internally. Nothing about the circuit changes, since the divider produces the same voltages, and the only difference is resolution, each ADC step becoming about 76 µV instead of 4.9 mV, and the LEDs getting 1024 brightness steps instead of 256.</p>
+<h2>References</h2>
+<ul>
+<li><a href="https://docs.arduino.cc/language-reference/en/functions/analog-io/analogRead/" rel="nofollow">Arduino <code class="notranslate">analogRead()</code></a> and <a href="https://docs.arduino.cc/language-reference/en/functions/math/map/" rel="nofollow"><code class="notranslate">map()</code></a>.</li>
+<li><a href="https://docs.arduino.cc/language-reference/en/functions/analog-io/analogWrite/" rel="nofollow">Arduino <code class="notranslate">analogWrite()</code> and PWM pins</a>.</li>
+<li><a href="https://learn.sparkfun.com/tutorials/voltage-dividers/all" rel="nofollow">SparkFun voltage dividers tutorial</a>.</li>
+<li><a href="https://learn.adafruit.com/photocells/using-a-photocell" rel="nofollow">Adafruit photocell guide</a>.</li>
+<li><a href="https://content.arduino.cc/assets/Pinout-UNOrev3_latest.pdf" rel="nofollow">UNO R3 pinout and per-pin current specification</a>.</li>
+<li><a href="https://www.kicad.org/" rel="nofollow">KiCad</a>, used for the schematic.</li>
+</ul></article></main>
+<footer><a href="index.html">Back to the portfolio</a> · <a href="https://github.com/runkaiz/hcde439">Source on GitHub</a></footer>
+</body>
+</html>
