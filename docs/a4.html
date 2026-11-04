@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="A sign for a door that I can change from across the room, with a servo for a needle and the kit remote for a control." />
+<title>A4: Door Status Dial · Runkai Zhang</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+<nav aria-label="Portfolio"><a href="index.html">← All assignments</a></nav>
+<header>
+<p class="eyebrow">HCDE 439 · Assignment 4</p>
+<h1>Door Status Dial: A Remote-Controlled Sign</h1>
+<p>An IR remote and a servo on an ELEGOO UNO R3, using the IRremote and Servo libraries</p>
+<p>Runkai Zhang · <time datetime="2026-11-03">November 3, 2026</time></p>
+</header>
+<main><article>
+<p>A closed door does not say whether I am busy, asleep, or glad to be interrupted. The Door Status Dial is a sign for the outside of a door, with a servo needle that points to one of four statuses, Come in, Knock first, Focusing, or Asleep, and I can change it from across the room with the kit's IR remote. The input is the IR receiver, using the IRremote library, and the outputs are the servo, using the Servo library, and the UNO's built-in LED. In this prototype the white servo horn is the needle, and the printed dial is not made yet. Nothing here calls <code class="notranslate">analogRead()</code>, so there is no sensor reading to calibrate.</p>
+<h2>Schematic</h2>
+<figure>
+    <img src="projects/door-dial/schematic.png" alt="KiCad schematic. IR receiver module J1: signal to D2 on net IR_SIGNAL, power to 5 V, ground to GND. D9 on net SERVO_PWM goes to the signal pin of SG90 servo M1, whose power and ground pins go to 5 V and GND. A note says D13 drives the UNO's built-in LED." width="1165" height="624" />
+    <figcaption>KiCad schematic, with every connection labeled. KiCad's electrical rules check reports no violations. <a href="projects/door-dial/door_dial.kicad_sch">KiCad file</a> · <a href="projects/door-dial/door_dial.pdf">PDF</a></figcaption>
+</figure>
+<table>
+<thead><tr><th>Part</th><th>Lead or pin</th><th>Connects to</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>IR receiver module</td><td>Y, signal</td><td>D2 (<code class="notranslate">IR_PIN</code>)</td><td>IRremote can read any digital pin, and D2 is not a PWM pin</td></tr>
+<tr><td>IR receiver module</td><td>R and G</td><td>5 V and GND</td><td>Module power</td></tr>
+<tr><td>SG90 servo</td><td>Orange, signal</td><td>D9 (<code class="notranslate">SERVO_PIN</code>)</td><td>The Servo library disables PWM on D9 and D10 either way, so using D9 costs nothing</td></tr>
+<tr><td>SG90 servo</td><td>Red and brown</td><td>5 V and GND</td><td>Motor power, which a GPIO pin cannot supply</td></tr>
+<tr><td>Built-in L LED</td><td>On the board</td><td>D13 (<code class="notranslate">LED_PIN</code>)</td><td>Confirms a press with nothing to wire</td></tr>
+</tbody>
+</table>
+<p><strong>Resistors and capacitor.</strong> There are no resistors to choose, because the built-in LED and the IR module already include theirs. I also left out the usual capacitor across the servo's supply to keep the build simple, which depends on the servo carrying only its horn. In my recording the needle does not jump back to its starting angle, which is what a board reset would look like.</p>
+<h2>Circuit</h2>
+<figure>
+    <img src="projects/door-dial/circuit-photo.jpg" alt="My ELEGOO UNO R3 on a desk, jumpered to a breadboard holding the IR receiver module, with an SG90 servo and the ELEGOO remote lying beside them. A bright green LED on the board stays lit throughout." width="1400" height="1520" />
+    <figcaption>My assembled circuit. Two jumpers carry 5 V and ground to the breadboard, which powers the IR receiver and the servo.</figcaption>
+</figure>
+<h2>Firmware</h2>
+<p>Each pass through <code class="notranslate">loop()</code> checks for a press, moves the needle at most one degree, and turns the LED off when its time is up. There is no <code class="notranslate">delay()</code>, so presses register while the needle is moving.</p>
+<pre class="notranslate"><code>// Compile in only the NEC decoder, the protocol the remote sends
+#define DECODE_NEC
+// IRremote library: turns the receiver's pulses into button codes
+#include &lt;IRremote.hpp&gt;
+// Servo library
+#include &lt;Servo.h&gt;
+
+// D2 reads the IR receiver module's signal pin (Y)
+const int IR_PIN = 2;
+// D13 drives the board's built-in L LED, which needs no wiring, to confirm each press
+const int LED_PIN = 13;
+// D9 sends control pulses to the servo's orange signal wire
+const int SERVO_PIN = 9;
+
+// The dial has four 45 degree wedges, and each angle below is the center of one wedge
+// Wedge 1, 0 to 45 degrees: "Come in", a pulse of about 770 microseconds
+const int ANGLE_COME_IN = 22;
+// Wedge 2, 45 to 90 degrees: "Knock first", a pulse of about 1234 microseconds
+const int ANGLE_KNOCK = 67;
+// Wedge 3, 90 to 135 degrees: "Focusing", a pulse of about 1709 microseconds
+const int ANGLE_FOCUSING = 113;
+// Wedge 4, 135 to 180 degrees: "Asleep", a pulse of about 2173 microseconds
+const int ANGLE_ASLEEP = 158;
+
+// NEC command the kit remote sends for button 1 (check against the Serial Monitor)
+const uint16_t BUTTON_1 = 0x0C;
+// NEC command for button 2
+const uint16_t BUTTON_2 = 0x18;
+// NEC command for button 3
+const uint16_t BUTTON_3 = 0x5E;
+// NEC command for button 4
+const uint16_t BUTTON_4 = 0x08;
+
+// Move one degree every 20 ms, matching the servo's 20 ms pulse period, so each pulse is a new angle
+const unsigned long STEP_MS = 20;
+// Keep the LED on for 150 ms: long enough to see, short enough to be over before the next press
+const unsigned long LED_ON_MS = 150;
+
+// Servo object that controls the needle
+Servo needle;
+// The angle the needle was last told to hold, which starts on "Come in"
+int currentAngle = ANGLE_COME_IN;
+// The angle the needle is moving toward
+int targetAngle = ANGLE_COME_IN;
+// The time of the needle's last one degree step
+unsigned long lastStepAt = 0;
+// The time the LED was last turned on
+unsigned long ledOnAt = 0;
+// Remembers whether the LED is currently on
+bool ledIsOn = false;
+
+// Converts a button code to a dial angle, or returns -1 if that button has no status
+int angleForButton(uint16_t command) {
+  // Choose the case that matches the button code
+  switch (command) {
+    // Button 1 selects "Come in"
+    case BUTTON_1: return ANGLE_COME_IN;
+    // Button 2 selects "Knock first"
+    case BUTTON_2: return ANGLE_KNOCK;
+    // Button 3 selects "Focusing"
+    case BUTTON_3: return ANGLE_FOCUSING;
+    // Button 4 selects "Asleep"
+    case BUTTON_4: return ANGLE_ASLEEP;
+    // Any other button is not a status
+    default: return -1;
+  }
+}
+
+// Runs once at power-up or reset
+void setup() {
+  // Open the serial port at 9600 baud so the Serial Monitor can show each button code
+  Serial.begin(9600);
+  // Make the LED pin an output
+  pinMode(LED_PIN, OUTPUT);
+  // Set the starting angle first so the first pulse is not the library's default 90 degrees
+  needle.write(currentAngle);
+  // Start sending control pulses on D9
+  needle.attach(SERVO_PIN);
+  // Start listening on D2, with the library's own LED flashing off so D13 only confirms presses
+  IrReceiver.begin(IR_PIN, DISABLE_LED_FEEDBACK);
+}
+
+// Runs over and over after setup()
+void loop() {
+  // Use one timestamp for every check in this pass through the loop
+  unsigned long now = millis();
+
+  // True when the receiver has finished decoding a transmission
+  if (IrReceiver.decode()) {
+    // Holding a button sends repeat frames, and those should not count as new presses
+    bool isRepeat = IrReceiver.decodedIRData.flags &amp; IRDATA_FLAGS_IS_REPEAT;
+    // Copy out the button code
+    uint16_t command = IrReceiver.decodedIRData.command;
+    // Tell the receiver it can start listening for the next transmission
+    IrReceiver.resume();
+    // Look up the dial angle for this button
+    int newTarget = angleForButton(command);
+
+    // Log every fresh press, even of an unused button, so its code can be read
+    if (!isRepeat) {
+      // Label the button code in the log
+      Serial.print("button=0x");
+      // Print the code in hexadecimal to compare with the BUTTON constants
+      Serial.println(command, HEX);
+    }
+
+    // Only a fresh press of a status button changes anything
+    if (!isRepeat &amp;&amp; newTarget &gt;= 0) {
+      // Point the needle at the new status
+      targetAngle = newTarget;
+      // Light the LED, which confirms the press even if the needle is already there
+      digitalWrite(LED_PIN, HIGH);
+      // Remember when the LED came on
+      ledOnAt = now;
+      // Remember that the LED needs turning off later
+      ledIsOn = true;
+    }
+  }
+
+  // Step only if the needle is off target and a full 20 ms has passed
+  if (currentAngle != targetAngle &amp;&amp; now - lastStepAt &gt;= STEP_MS) {
+    // Restart the step timer
+    lastStepAt = now;
+    // Move one degree in whichever direction reaches the target
+    currentAngle += (targetAngle &gt; currentAngle) ? 1 : -1;
+    // Send the new angle to the servo
+    needle.write(currentAngle);
+  }
+
+  // Turn the LED off once its 150 ms is over
+  if (ledIsOn &amp;&amp; now - ledOnAt &gt;= LED_ON_MS) {
+    // Set D13 low
+    digitalWrite(LED_PIN, LOW);
+    // Remember that the LED is off
+    ledIsOn = false;
+  }
+}</code></pre>
+<table>
+<thead><tr><th>Value in code</th><th>What it corresponds to</th><th>Why this value</th></tr></thead>
+<tbody>
+<tr><td><code class="notranslate">ANGLE_COME_IN = 22</code>, <code class="notranslate">ANGLE_KNOCK = 67</code>, <code class="notranslate">ANGLE_FOCUSING = 113</code>, <code class="notranslate">ANGLE_ASLEEP = 158</code></td><td>Needle positions, sent as pulses of about 770, 1234, 1709, and 2173 µs</td><td>The centers of four equal 45° wedges, which also stay away from the ends of the servo's travel</td></tr>
+<tr><td><code class="notranslate">BUTTON_1</code> to <code class="notranslate">BUTTON_4</code> = <code class="notranslate">0x0C</code>, <code class="notranslate">0x18</code>, <code class="notranslate">0x5E</code>, <code class="notranslate">0x08</code></td><td>The NEC command for each remote button</td><td>From the kit remote's code table, and only these codes move the needle, so the four positions in my recording show they match my remote</td></tr>
+<tr><td><code class="notranslate">STEP_MS = 20</code></td><td>Time per degree of needle travel</td><td>Matches the library's 20 ms pulse period, so each pulse carries one new angle, and the longest move, 136°, takes about 2.7 s</td></tr>
+<tr><td><code class="notranslate">LED_ON_MS = 150</code></td><td>Length of the LED blink</td><td>Long enough to see, and over before the next press</td></tr>
+<tr><td><code class="notranslate">Serial.begin(9600)</code></td><td>Speed of the USB serial log</td><td>Plenty for one short line per press</td></tr>
+</tbody>
+</table>
+<h2>Operation</h2>
+<figure>
+    <img src="projects/door-dial/circuit-operation.gif" alt="Recording from above the desk: a hand holds the remote in the foreground and presses buttons, and the white servo horn in the background turns from one position to the next. A small red LED on the IR receiver module flashes during presses." width="320" height="444" />
+    <figcaption>Fifteen seconds from my recording. Each press sends the horn slowly to a new position, and the red flash on the breadboard is the IR module's own indicator. The sketch also blinks D13, but a brighter green LED on the board washes that out on camera.</figcaption>
+</figure>
+<h2>Question 1: voltage at pin 9 during the sweep</h2>
+<figure>
+    <img src="projects/door-dial/servo-voltage.svg" alt="Three traces of voltage against time, each showing three 5 volt pulses, 20 milliseconds apart, with 0 volts between them. At pos 0 the pulses are 544 microseconds wide, at pos 90 they are 1472 microseconds wide, and at pos 180 they are 2400 microseconds wide. A fourth chart shows pulse width rising in a ramp from 544 to 2400 microseconds over 18.1 seconds and then dropping back to 544 to repeat." width="760" height="690" />
+    <figcaption>Predictions not measured.</figcaption>
+</figure>
+<p>Pin 9 is only ever at 0 V or 5 V, because <code class="notranslate">myservo.write()</code> sets how long each pulse stays high rather than setting a voltage. The library sends a pulse every 20 ms and maps 0° to 180° onto a width of 544 to 2400 µs, about 10.3 µs per degree. Each value of <code class="notranslate">pos</code> lasts 100 ms, or five pulses, so a sweep takes about 18.1 s, and then <code class="notranslate">pos</code> returns to 0 and the pulses drop back to 544 µs.</p>
+<h2>Question 2: an erroneous reading 1% of the time</h2>
+<p>A rare wrong reading is an outlier, so I would take the median, which ignores outliers instead of averaging them in:</p>
+<pre class="notranslate"><code>// Take five readings in a row
+for (i = 0; i &lt; 5; i++) {
+  samples[i] = readSensor();
+}
+// Put them in order from lowest to highest
+sort(samples);
+// The middle value cannot be a lone outlier, since an outlier sorts to one end
+reading = samples[2];</code></pre>
+<p>If errors are independent, the median is only wrong when at least three of the five readings are bad, about 0.001% of the time.</p>
+<h2>Question 3: noise of 10% up or down</h2>
+<p>Here every reading is a little off, and noise that goes up as often as down cancels out, so I would average:</p>
+<pre class="notranslate"><code>// Start the running total at zero
+total = 0;
+// Add up sixteen readings, spaced 5 ms apart
+for (i = 0; i &lt; 16; i++) {
+  total = total + readSensor();
+  wait(5 ms);
+}
+// Divide to get the average
+reading = total / 16;</code></pre>
+<p>Averaging 16 readings cuts random error by √16, from 10% to about 2.5%, at the cost of about 80 ms of lag.</p>
+<h2>References</h2>
+<ul>
+<li><a href="https://docs.arduino.cc/libraries/servo/">Arduino Servo library</a>.</li>
+<li><a href="https://github.com/Arduino-IRremote/Arduino-IRremote">IRremote library</a>.</li>
+<li><a href="https://us.elegoo.com/blogs/arduino-projects/elegoo-uno-r3-project-the-most-complete-starter-kit-tutorial">ELEGOO kit tutorials</a>, for the IR receiver and servo.</li>
+<li><a href="https://content.arduino.cc/assets/Pinout-UNOrev3_latest.pdf">UNO R3 pinout and per-pin current specification</a>.</li>
+<li><a href="https://www.kicad.org/">KiCad</a>, used for the schematic.</li>
+</ul>
+</article></main>
+<footer><a href="index.html">Back to the portfolio</a> · <a href="https://github.com/runkaiz/hcde439">Source on GitHub</a></footer>
+</body>
+</html>

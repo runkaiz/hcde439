@@ -8,6 +8,8 @@ Assignment A2 is in `docs/a2.html`. Its Markdown source is `assignments/a2.md`, 
 
 Assignment A3 is in `docs/a3.html`. Its Markdown source is `assignments/a3.md`, rendered with the GitHub Markdown API (figures are swapped out before rendering and restored after, since the API strips `<figure>`), and its assets, including the KiCad schematic, are in `docs/projects/daylight-monitor/`.
 
+Assignment A4 is in `docs/a4.html`. Its Markdown source is `assignments/a4.md`, and its assets are in `docs/projects/door-dial/`.
+
 To update a page, edit its HTML in `docs/`, commit, and push to `main`. GitHub Pages automatically publishes the changes. Use paths relative to the HTML page for media and links so they work under `/hcde439/`.
 
 The A1 post was migrated from `runkaiz/my-website`; the original blog location links to the course page.
